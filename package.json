@@ -1,0 +1,30 @@
+{
+  "name": "uberformaids",
+  "version": "1.0.0",
+  "description": "Uber for maids test",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rlee570/uberformaids.git"
+  },
+  "author": "robert lee",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rlee570/uberformaids/issues"
+  },
+  "homepage": "https://github.com/rlee570/uberformaids#readme",
+  "dependencies": {
+    "chalk": "^2.4.2",
+    "jest": "^24.0.0",
+    "koa": "^2.7.0",
+    "koa-logger": "^3.2.0",
+    "koa-router": "^7.4.0"
+  }
+}
