@@ -16,8 +16,8 @@ router.get("/helpers",async ctx=>{
     let result;
     if(ctx.query.lat && ctx.query.lon){
         try{
+            //lat and lon need to be floats
             result = await collection.find({lat:parseFloat(ctx.query.lat),lon:parseFloat(ctx.query.lon)}).toArray()
-            console.log(result)
         }catch(err){
             console.error(chalk.red("Couldn't locate that id:"),err)
             ctx.status=500
@@ -26,7 +26,6 @@ router.get("/helpers",async ctx=>{
     }else{
         try{
             result = await collection.find().toArray()
-            console.log(result)
         }catch(err){
             console.error(chalk.red("Couldn't locate that id:"),err)
             ctx.status=500
