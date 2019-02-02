@@ -32,7 +32,7 @@ router.get("/helpers",async ctx=>{
     if(ctx.query.lat && ctx.query.lon){
         try{
             //lat and lon need to be floats
-            result = await collection.find({lat:parseFloat(ctx.query.lat),lon:parseFloat(ctx.query.lon)}).toArray()
+            result = await collection.find({lat:parseFloat(ctx.query.lat),lon:parseFloat(ctx.query.lon),booked:false}).toArray()
         }catch(err){
             console.error(chalk.red("Couldn't locate that id: "),err)
             ctx.body="Couldn't locate that id"
@@ -41,7 +41,7 @@ router.get("/helpers",async ctx=>{
         ctx.body=result
     }else{
         try{
-            result = await collection.find().toArray()
+            result = await collection.find({booked:false}).toArray()
         }catch(err){
             console.error(chalk.red("Couldn't find any maids: "),err)
             ctx.body="Couldn't find any maids"
@@ -52,7 +52,7 @@ router.get("/helpers",async ctx=>{
 })
 
 //Finding a helper by ID
-router.get("/helper/:id",async ctx=>{
+router.get("/helpers/:id",async ctx=>{
     let result;
     await setupMongo()
     try{

@@ -33,9 +33,9 @@ const server = app.listen(port,async () =>{
     //insert some maids 
     try{
         const maids = [
-            {id:1,name:"niamh",lat:1,lon:100,rate:100},
-            {id:2,name:"siobhan",lat:1.3,lon:100.5,rate:150},
-            {id:3,name:"aoife",lat:1.5,lon:101,rate:200}
+            {id:1,name:"niamh",lat:1,lon:100,rate:100,booked:false},
+            {id:2,name:"siobhan",lat:1.3,lon:100.5,rate:150,booked:false},
+            {id:3,name:"aoife",lat:1.5,lon:101,rate:200,booked:false}
         ]
         collection = database.collection("helpers")
         collection.insertMany(maids)
