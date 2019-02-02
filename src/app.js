@@ -88,28 +88,29 @@ router.post("/helpers/:id/book",async ctx=>{
             ctx.status=500
         }
 
-        if(helper){
-            //find the maid and update her to booked
-            try{
-                //the id is a String needs to be of type int to retrieve maid data
-                await collection.updateOne({id:parseInt(ctx.params.id),booked:false},{$set:{booked:true}})
-                client.close()
-            }catch(err){
-                console.error(chalk.red("There is a problem with updating that maid:"),err)
-                client.close()
-                ctx.body="There is a problem updating that maid"
-                ctx.status=500
-            }
-             //return a string explaining the rate address and name of the maid.
-            ctx.status = 200
-            let rate = ctx.query.duration * helper.rate
-            ctx.body = "Booked Helper "+helper.name+ " for this address "+ctx.query.address+ " at this rate "+rate
-        }else{
-            console.error(chalk.red("That maid is unavailable"),err)
-            client.close()
-            ctx.body="That maid is unavailable"
+        if(typeof helper === null){
+            console.error(chalk.red("There is a problem with updating that maid:"))
+            ctx.body="The maid is not available"
             ctx.status=500
         }
+       
+        //find the maid and update her to booked
+        try{
+            //the id is a String needs to be of type int to retrieve maid data
+            await collection.updateOne({id:parseInt(ctx.params.id),booked:false},{$set:{booked:true}})
+            client.close()
+        }catch(err){
+            console.error(chalk.red("There is a problem with updating that maid:"),err)
+            client.close()
+            ctx.body="There is a problem updating that maid"
+            ctx.status=500
+        }
+        
+        //return a string explaining the rate address and name of the maid.
+        ctx.status = 200
+        let rate = ctx.query.duration * helper.rate
+        ctx.body = "Booked Helper "+helper.name+ " for this address "+ctx.query.address+ " at this rate "+rate
+    
        
     }else if(!ctx.query.duration){
         console.error(chalk.red("There is no duration specified"))
