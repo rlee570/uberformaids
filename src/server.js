@@ -13,7 +13,7 @@ const server = app.listen(port,async () =>{
     console.log(chalk.rgb(16, 255, 0).bold(new Date +": "+ "Server startup on port: 3000"))
     //mongo setup
     try{
-        client = await mongoClient.connect(mongoUrl)
+        client = await mongoClient.connect(mongoUrl,{ useNewUrlParser: true })
         database = client.db("ubermaids")
         collection = database.createCollection("helpers")
         
