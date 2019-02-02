@@ -9,7 +9,7 @@ let collection,client,database;
 /*necessary because superagent doesn't use server.js
  to create the server so need to fix the state of the
  database after each test to ensure its clean everytime*/
-afterEach(async ()=>{
+beforeEach(async ()=>{
     //mongo setup
     try{
         client = await mongoClient.connect(mongoUrl,{ useNewUrlParser: true })
@@ -17,7 +17,7 @@ afterEach(async ()=>{
         collection = database.createCollection("helpers")
     }catch(err){
         console.error("Mongo failed to setup: ",err)
-        await client.close()
+        client.close()
     }
     /*removes any previous setup data in the collection 
       from multiple runs of the server
@@ -28,7 +28,7 @@ afterEach(async ()=>{
         collection.deleteMany()
     }catch(err){
         console.error("Mongo failed to remove anything: ",err)
-        await client.close()
+        client.close()
     }
     //insert some maids 
     try{
@@ -39,10 +39,10 @@ afterEach(async ()=>{
         ]
         collection = database.collection("helpers")
         collection.insertMany(maids)
-        await client.close()
+        client.close()
     }catch(err){
         console.error("Failed to insert dummy data: ",err)
-        await client.close()
+        client.close()
     }
 })
 
