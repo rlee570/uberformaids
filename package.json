@@ -24,6 +24,7 @@
     "chalk": "^2.4.2",
     "jest": "^24.0.0",
     "koa": "^2.7.0",
+    "koa-bodyparser": "^4.2.1",
     "koa-logger": "^3.2.0",
     "koa-router": "^7.4.0",
     "mongodb": "^3.1.13",

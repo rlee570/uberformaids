@@ -19,7 +19,7 @@ beforeEach(async ()=>{
         console.error("Mongo failed to setup: ",err)
         client.close()
     }
-    /*removes any previous setup data in the collection 
+    /*removes any previous setup data in the collection
       from multiple runs of the server
       wouldn't be necessary in a production environment just
       for the sake of this test.*/
@@ -30,7 +30,7 @@ beforeEach(async ()=>{
         console.error("Mongo failed to remove anything: ",err)
         client.close()
     }
-    //insert some maids 
+    //insert some maids
     try{
         const maids = [
             {id:1,name:"niamh",lat:1,lon:100,rate:100,booked:false},
@@ -49,6 +49,7 @@ beforeEach(async ()=>{
 describe("route helpers",() =>{
     test("Should retrieve helpers data",async ()=>{
         const response = await request(app.callback()).get("/helpers")
+
         expect(response.status).toEqual(200);
         expect(response.type).toEqual("application/json");
         response.body.forEach(x => {
@@ -66,7 +67,8 @@ describe("route helpers",() =>{
         const response = await request(app.callback())
             .get("/helpers")
             .query({lon:100})
-            .query({lat:1})
+            .query({ lat: 1 })
+
         expect(response.status).toEqual(200);
         expect(response.type).toEqual("application/json");
         expect(response.body[0]).toHaveProperty("_id");
@@ -84,6 +86,7 @@ describe("route helpers",() =>{
     })
     test("Should find helper by id",async () =>{
         const response = await request(app.callback()).get("/helpers/2")
+
         expect(response.status).toEqual(200);
         expect(response.type).toEqual("application/json");
         expect(response.body).toHaveProperty("_id");
@@ -101,27 +104,28 @@ describe("route helpers",() =>{
     })
 })
 
-describe("route book",()=>{
+describe("route book", () => {
     test("Should book helper",async () =>{
         const response = await request(app.callback())
             .post("/helpers/2/book")
-            .query({duration:5})
-            .query({address:"12 Coolsville"})
+            .send({duration: 5,address: "12 Coolsville"})
         expect(response.status).toEqual(200);
         expect(response.type).toEqual("text/plain");
         expect(response.text).toBe("Booked Helper siobhan for this address 12 Coolsville at this rate 750");
     })
+
     test("Call to helpers should change",async ()=>{
         //book a maid
         let response = await request(app.callback())
             .post("/helpers/2/book")
-            .query({duration:5})
-            .query({address:"12 Coolsville"})
+            .send({duration: 5,address: "12 Coolsville"})
         expect(response.status).toEqual(200);
         expect(response.type).toEqual("text/plain");
         expect(response.text).toBe("Booked Helper siobhan for this address 12 Coolsville at this rate 750");
+
         //then expect the helpers response to be short one value as one maid is now booked
         response = await request(app.callback()).get("/helpers")
+
         expect(response.status).toEqual(200);
         expect(response.type).toEqual("application/json");
         response.body.forEach(x => {
@@ -134,5 +138,38 @@ describe("route book",()=>{
             expect(x).toHaveProperty("booked");
         });
         expect(Object.keys(response.body).length).toBe(2)
+    })
+
+    test("Successive duplicate requests should fail", async () => {
+        let response = await request(app.callback())
+            .post("/helpers/1/book")
+            .send({ duration: 10, address: "Whitefield" })
+        response = await request(app.callback())
+            .post("/helpers/1/book")
+            .send({ duration: 10, address: "Brookfield" })
+        expect(response.status).toEqual(500)
+    })
+
+    test("All maids are booked", async () => {
+        let response = await request(app.callback())
+            .post("/helpers/1/book")
+            .send({ duration: 10, address: "Whitefield" })
+        response = await request(app.callback())
+            .post("/helpers/2/book")
+            .send({ duration: 10, address: "Brookfield" })
+        response = await request(app.callback())
+            .post("/helpers/3/book")
+            .send({ duration: 10, address: "Smokefield" })
+
+        response = await request(app.callback()).get("/helpers")
+        expect(response.status).toEqual(200)
+    })
+
+    test("Booking request with invalid duration", async () => {
+        let response = await request(app.callback())
+            .post("/helpers/1/book")
+            .send({ duration: -1, address: "Tomfield" })
+
+        expect(response.status).toEqual(400)
     })
 })

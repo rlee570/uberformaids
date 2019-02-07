@@ -3,6 +3,7 @@ const koa = require('koa');
 const Router = require('koa-router');
 const logger = require('koa-logger');
 const chalk = require('chalk');
+const bodyParser = require('koa-bodyparser');
 const mongoClient = require('mongodb').MongoClient;
 const app = new koa();
 const router = new Router();
@@ -76,48 +77,55 @@ router.get("/helpers/:id",async ctx=>{
 router.post("/helpers/:id/book",async ctx=>{
     let helper;
     await setupMongo()
-    if(ctx.query.duration && ctx.query.address){
-        //find the maid and make sure she isn't already booked
-        try{
-            //the id is a String needs to be of type int to retrieve maid data
-            helper = await collection.findOne({id:parseInt(ctx.params.id),booked:false})
-        }catch(err){
-            console.error(chalk.red("There is a problem with finding that maid:"),err)
-            client.close()
-            ctx.body="There is a problem booking that maid. It is likely caused by an incorrect id or the maid is already booked"
-            ctx.status=500
-        }
-
-        if(typeof helper === null){
-            console.error(chalk.red("There is a problem with updating that maid:"))
-            ctx.body="The maid is not available"
-            ctx.status=500
-        }
-       
-        //find the maid and update her to booked
-        try{
-            //the id is a String needs to be of type int to retrieve maid data
-            await collection.updateOne({id:parseInt(ctx.params.id),booked:false},{$set:{booked:true}})
-            client.close()
-        }catch(err){
-            console.error(chalk.red("There is a problem with updating that maid:"),err)
-            client.close()
-            ctx.body="There is a problem updating that maid"
-            ctx.status=500
-        }
-        
-        //return a string explaining the rate address and name of the maid.
-        ctx.status = 200
-        let rate = ctx.query.duration * helper.rate
-        ctx.body = "Booked Helper "+helper.name+ " for this address "+ctx.query.address+ " at this rate "+rate
     
-       
-    }else if(!ctx.query.duration){
+    if(ctx.request.body.duration < 1){
+        client.close()
+        ctx.body = "Duration must be greater than 0"
+        ctx.status = 400
+    }else if(ctx.request.body.duration && ctx.request.body.address){
+            //find the maid and make sure she isn't already booked
+            try{
+                //the id is a String needs to be of type int to retrieve maid data
+                helper = await collection.findOne({id:parseInt(ctx.params.id),booked:false})
+            }catch(err){
+                console.error(chalk.red("There is a problem with finding that maid:"),err)
+                client.close()
+                ctx.body="There is a problem booking that maid. It is likely caused by an incorrect id or the maid is already booked"
+                ctx.status=500
+            }
+            
+            //Helper becomes an object with value null
+            //=== will evaluate incorrectly. Need to switch
+            //to == as it is less strict.
+            if(helper != null){
+                 //find the maid and update her to booked
+                 try{
+                    //the id is a String needs to be of type int to retrieve maid data
+                    await collection.updateOne({id:parseInt(ctx.params.id),booked:false},{$set:{booked:true}})
+                    client.close()
+                }catch(err){
+                    console.error(chalk.red("There is a problem with updating that maid"),err)
+                    client.close()
+                    ctx.body="There is a problem updating that maid"
+                    ctx.status=500
+                }
+    
+                //return a string explaining the rate address and name of the maid.
+                ctx.status = 200
+                let rate = ctx.request.body.duration * helper.rate
+                ctx.body = "Booked Helper "+helper.name+ " for this address "+ctx.request.body.address+ " at this rate "+rate
+            }else{
+                console.error(chalk.red("That maid is already booked"))
+                client.close()
+                ctx.body="The maid is already booked"
+                ctx.status=500
+            }
+    }else if(!ctx.request.body.duration){
         console.error(chalk.red("There is no duration specified"))
         client.close()
         ctx.body="There is no duration specified"
         ctx.status=500
-    }else if(!ctx.query.address){
+    }else if(!ctx.request.body.address){
         console.error(chalk.red("There is no address specified"))
         client.close()
         ctx.body="There is no address specified"
@@ -132,6 +140,8 @@ router.post("/helpers/:id/book",async ctx=>{
 
 //Logging Access requests 
 app.use(logger())
+//Add body parser for POST requests
+app.use(bodyParser())
 //Router for the routes
 app.use(router.routes())
 //export app
